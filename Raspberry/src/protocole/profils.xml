@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="DomotiqueProtocol">
+
+    <!-- ================= TYPES DE MESSAGE ================= -->
+    <types>
+
+        <!-- ============= 0x01 : DATA ============= -->
+        <type id="0x01" name="DATA" description="Données envoyées par les capteurs">
+            <id id="0x01" name="TEMP" description="Température">
+                <data direction="in">
+                    <unit>°C</unit>
+                    <value min="-40" max="85"/>
+                </data>
+            </id>
+            <id id="0x02" name="HUM" description="Humidité">
+                <data direction="in">
+                    <unit>%</unit>
+                    <value min="0" max="100"/>
+                </data>
+            </id>
+            <id id="0x03" name="PRESENCE" description="Présence">
+                <data direction="in">
+                    <unit>bool</unit>
+                    <value>0:absent, 1:présent</value>
+                </data>
+            </id>
+        </type>
+
+        <!-- ============= 0x02 : PRESENCE ============= -->
+        <type id="0x02" name="PRESENCE" description="Signal simple de présence">
+            <id id="0x04" name="PRESENCE_SIMPLE" description="Présence PIR">
+                <data direction="in">
+                    <unit>bool</unit>
+                    <value>0:non détecté, 1:présent</value>
+                </data>
+            </id>
+        </type>
+
+        <!-- ============= 0x03 : ACTION ============= -->
+        <type id="0x03" name="ACTION" description="Commande envoyée vers un périphérique">
+            <id id="0x10" name="LIGHT_ON" description="Allumer la lumière">
+                <data direction="out">
+                    <unit>bool</unit>
+                    <value>1</value>
+                </data>
+            </id>
+            <id id="0x11" name="LIGHT_OFF" description="Éteindre la lumière">
+                <data direction="out">
+                    <unit>bool</unit>
+                    <value>0</value>
+                </data>
+            </id>
+        </type>
+
+        <!-- ============= 0x04 : REQUEST ============= -->
+        <type id="0x04" name="REQUEST" description="Demande de données à un capteur">
+            <id id="0x01" name="TEMP" description="Demande température"/>
+            <id id="0x02" name="HUM" description="Demande humidité"/>
+            <id id="0x03" name="PRESENCE" description="Demande présence"/>
+            <id id="0xFF" name="ALL" description="Demande tous les capteurs"/>
+        </type>
+
+		<!-- ============= 0x05 : CONFIGURATION ============= -->
+        <type id="0x05" name="CONFIG" description="Réglages distants de l’Arduino">
+
+            <!-- 0x20 : Fréquence d’échantillonnage de chaque capteur -->
+            <id id="0x20" name="SET_INTERVAL" description="Définir l’intervalle d’échantillonnage (ms)">
+                <data direction="out">
+                    <field name="SensorID" index="0">
+                        <unit>byte</unit>
+                        <value>0x01=TEMP | 0x02=HUM | 0x03=PRES | 0xFF=ALL</value>
+                    </field>
+                    <field name="Interval" index="1">
+                        <unit>ms</unit>
+                        <value min="100" max="60000"/>
+                    </field>
+                </data>
+            </id>
+
+            <!-- 0x21 : Lecture de l’intervalle actuel -->
+            <id id="0x21" name="GET_INTERVAL" description="Lire l’intervalle d’échantillonnage">
+                <data direction="out"/>
+            </id>
+
+            <!-- 0x22 : Seuils d’alerte température -->
+            <id id="0x22" name="SET_TEMP_THRESH" description="Seuil alerte température (°C)">
+                <data direction="out">
+                    <field name="HighLimit" index="0">
+                        <unit>°C</unit><value min="-40" max="125"/>
+                    </field>
+                    <field name="LowLimit" index="1">
+                        <unit>°C</unit><value min="-40" max="125"/>
+                    </field>
+                </data>
+            </id>
+
+            <!-- 0x23 : Activer/désactiver un capteur -->
+            <id id="0x23" name="SET_SENSOR_STATE" description="(Dé)activer un capteur">
+                <data direction="out">
+                    <field name="SensorID" index="0">
+                        <unit>byte</unit>
+                        <value>0x01=TEMP | 0x02=HUM | 0x03=PRES</value>
+                    </field>
+                    <field name="State" index="1">
+                        <unit>bool</unit><value>0=Off | 1=On</value>
+                    </field>
+                </data>
+            </id>
+
+            <!-- 0x24 : Baudrate série -->
+            <id id="0x24" name="SET_BAUDRATE" description="Changer le débit série (bps)">
+                <data direction="out">
+                    <field name="Baudrate" index="0">
+                        <unit>bps</unit>
+                        <value list="9600,19200,38400,57600,115200"/>
+                    </field>
+                </data>
+            </id>
+
+            <!-- 0x25 : Requête de firmware / version -->
+            <id id="0x25" name="GET_FW_VERSION" description="Demander la version firmware">
+                <data direction="out"/>
+            </id>
+
+        </type>
+
+        <!-- ============= 0x06 : ALERTES ============= -->
+        <type id="0x06" name="ALERT" description="Messages d’alerte système">
+
+            <!-- 0x30 : Confirmation de mise à jour config -->
+            <id id="0x30" name="CONFIG_UPDATED" description="Une configuration a été modifiée">
+                <data direction="in">
+                    <field name="ConfigID" index="0">
+                        <unit>byte</unit>
+                        <value>reprend l’ID du paramètre mis à jour (ex : 0x20, 0x22…)</value>
+                    </field>
+                    <field name="Status" index="1">
+                        <unit>bool</unit><value>1=OK | 0=Échec</value>
+                    </field>
+                </data>
+            </id>
+
+            <!-- 0x32 : Capteur muet / timeout -->
+            <id id="0x32" name="SENSOR_TIMEOUT" description="Un capteur ne répond plus">
+                <data direction="in">
+                    <field name="SensorID" index="0">
+                        <unit>byte</unit>
+                        <value>0x01=TEMP | 0x02=HUM | 0x03=PRES</value>
+                    </field>
+                    <field name="Elapsed" index="1">
+                        <unit>s</unit><value min="0" max="65535"/>
+                    </field>
+                </data>
+            </id>
+
+        </type>
+
+    </types>
+
+</protocol>

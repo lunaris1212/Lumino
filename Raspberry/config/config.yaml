@@ -1,0 +1,27 @@
+# Configuration générale de Lumino
+
+app:
+  host: "0.0.0.0"         # Adresse IP d'écoute (0.0.0.0 = toutes les interfaces)
+  port: 5000              # Port Flask
+  debug: true             # Mode debug Flask
+
+serial:
+  port: ""    # Port série utilisé pour la communication Arduino
+  baudrate: 9600          # Vitesse de communication
+  timeout: 2              # Timeout en secondes
+
+presence:
+  detection_timeout: 60   # Temps (en secondes) après la dernière présence détectée avant extinction
+  delay_on: 1             # Délai en secondes avant d’allumer la lampe
+  delay_off: 5            # Délai en secondes avant d’éteindre après absence
+
+profiles:
+  xml_path: "src/protocole/profils.xml"  # Chemin vers le fichier de profils XML
+  default_profile: "basic"               # Profil utilisé par défaut
+
+logs:
+  file: "logs/app.log"     # Chemin vers le fichier de log
+  level: "INFO"            # Niveau de log : DEBUG, INFO, WARNING, ERROR
+
+security:
+  api_key: ""     # Clé API (à utiliser pour sécuriser l’interface ou les requêtes)
